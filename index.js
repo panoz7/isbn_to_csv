@@ -1,38 +1,23 @@
-import {makeHttpRequest} from './helper.js';
+import {makeHttpRequest, downloadFile} from './helper.js';
 
-
-document.getElementById('generateCSV').addEventListener('click', e => {
+// Attach an event listener to the generate CSV button
+document.getElementById('generateCSV').addEventListener('click', async (e) => {
     
     // Get the ISBN from the text field
     const isbn = document.getElementById('isbn').value;
     
-    getCSVDataFromISBN(isbn)
-    .then(csvData => {
+    try {
+        // Build the CSV Data
+        const csvData = await(getCSVDataFromISBN(isbn))
+        // Download the file
         downloadFile(`${isbn}.csv`,csvData)
-    })
-    .catch(e => {
+    }
+    catch(e) {
         alert("Unable to fetch data. Please double check the ISBN")
-    })
+    }
+
 
 })
-
-
-
-
-
-
-function downloadFile(filename, text) {
-    var element = document.createElement('a');
-    element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
-    element.setAttribute('download', filename);
-  
-    element.style.display = 'none';
-    document.body.appendChild(element);
-  
-    element.click();
-  
-    document.body.removeChild(element);
-  }
 
 
 async function getCSVDataFromISBN(isbn) {
