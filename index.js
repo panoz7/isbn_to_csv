@@ -8,7 +8,7 @@ document.getElementById('generateCSV').addEventListener('click', e => {
     
     getCSVDataFromISBN(isbn)
     .then(csvData => {
-        downloadCSV(`${isbn}.csv`,csvData)
+        downloadFile(`${isbn}.csv`,csvData)
     })
     .catch(e => {
         alert("Unable to fetch data. Please double check the ISBN")
@@ -18,9 +18,12 @@ document.getElementById('generateCSV').addEventListener('click', e => {
 
 
 
-function downloadCSV(filename, text) {
+
+
+
+function downloadFile(filename, text) {
     var element = document.createElement('a');
-    element.setAttribute('href', 'data:text/CSV;charset=utf-8,' + encodeURIComponent(text));
+    element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
     element.setAttribute('download', filename);
   
     element.style.display = 'none';
@@ -104,7 +107,7 @@ function buildExportData(data) {
 
 
 async function getOpenLibraryData(isbn) {
-    const response = await makeHttpRequest(`http://openlibrary.org/api/books?bibkeys=ISBN:${isbn}&jscmd=data&format=json`,'GET')
+    const response = await makeHttpRequest(`https://openlibrary.org/api/books?bibkeys=ISBN:${isbn}&jscmd=data&format=json`,'GET')
 
     try {
         return JSON.parse(response);
