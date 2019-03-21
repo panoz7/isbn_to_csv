@@ -1,13 +1,35 @@
 import {makeHttpRequest} from './helper.js';
 
 
+document.getElementById('generateCSV').addEventListener('click', e => {
+    
+    // Get the ISBN from the text field
+    const isbn = document.getElementById('isbn').value;
+    
+    getCSVDataFromISBN(isbn)
+    .then(csvData => {
+        downloadCSV(`${isbn}.csv`,csvData)
+    })
+    .catch(e => {
+        alert("Unable to fetch data. Please double check the ISBN")
+    })
 
-getCSVDataFromISBN(9780374533557)
-.then(csvData => {
-    console.log(csvData);
 })
 
 
+
+function downloadCSV(filename, text) {
+    var element = document.createElement('a');
+    element.setAttribute('href', 'data:text/CSV;charset=utf-8,' + encodeURIComponent(text));
+    element.setAttribute('download', filename);
+  
+    element.style.display = 'none';
+    document.body.appendChild(element);
+  
+    element.click();
+  
+    document.body.removeChild(element);
+  }
 
 
 async function getCSVDataFromISBN(isbn) {
