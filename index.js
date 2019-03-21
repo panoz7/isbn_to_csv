@@ -3,12 +3,21 @@ import {makeHttpRequest, downloadFile} from './helper.js';
 // Attach an event listener to the generate CSV button
 document.getElementById('generateCSV').addEventListener('click', async (e) => {
     
-    // Get the ISBN from the text field
-    const isbn = document.getElementById('isbn').value;
+    // Grab the ISBN string and remove any hyphens
+    let isbnString = document.getElementById('isbn').value;
+    isbnString = isbnString.replace("-","");
+
+    // Extract the individual ISBNs
+    let isbns = [];
+    let number = /\b\d+\b/g;
+    let match;
+    while (match = number.exec(isbnString)) {
+        isbns.push(match[0]);
+    }
     
     try {
         // Build the CSV Data
-        const csvData = await getCSVDataFromISBN(isbn);
+        const csvData = await getCSVDataFromISBNs(isbns);
         // Download the file
         downloadFile(`${isbn}.csv`,csvData)
     }
@@ -20,13 +29,11 @@ document.getElementById('generateCSV').addEventListener('click', async (e) => {
 })
 
 
-async function getCSVDataFromISBN(isbn) {
-
-    // Get the book info in JSON format from the Open Library API
-    const openLibraryData = await getOpenLibraryData(isbn); 
+async function getCSVDataFromISBNs(isbns) {
 
     // These are the columns we'll have in our CSV record
     const csvFields = [
+        'isbn',
         'title',
         'publisher',
         'publish_date',
@@ -40,13 +47,28 @@ async function getCSVDataFromISBN(isbn) {
         'subject_4',
         'subject_5'
     ]
+        
+    // Get the book info in JSON format from the Open Library API
+    const openLibraryData = await getOpenLibraryData(isbns);
 
-    // Build an exportData object containing the data we want in the CSV field
-    // The object's properties map to the columns in the CSV record we'll create
-    const exportData = buildExportData(openLibraryData);
+    // Build out the data rows by iterating through the ISBNs
+    const csvData = isbns.map(isbn => {
+        // Grab the isbn's metadata from the open library api data
+        let metadata = openLibraryData[`ISBN:${isbn}`];
 
-    // build an array with the data by mapping the field names to the exportData object
-    const csvData = csvFields.map(fieldName => exportData[fieldName])
+        // If there was metadata
+        if (metadata) {
+            // Build an exportData object containing the data we want in the CSV field
+            // The object's properties map to the columns in the CSV record we'll create
+            const exportData = buildExportData(isbn, metadata);
+            
+            // build an array with the data by mapping the field names to the exportData object
+            return csvFields.map(fieldName => exportData[fieldName]);
+        }
+
+        // Otherwise just return an array with the ISBN
+        return [isbn];
+    })
 
     // Return the CSV file
     return Papa.unparse({
@@ -57,10 +79,11 @@ async function getCSVDataFromISBN(isbn) {
 }
 
 
-function buildExportData(data) {
+function buildExportData(isbn, metadata) {
     let exportData = {};
 
-    const metadata = data[Object.keys(data)[0]];
+    // ISBN
+    exportData.isbn = isbn;
     
     // Title
     exportData.title = metadata.title;
@@ -91,8 +114,11 @@ function buildExportData(data) {
 }
 
 
-async function getOpenLibraryData(isbn) {
-    const response = await makeHttpRequest(`https://openlibrary.org/api/books?bibkeys=ISBN:${isbn}&jscmd=data&format=json`,'GET')
+async function getOpenLibraryData(isbns) {
+
+    const isbnParams = isbns.map(isbn => `ISBN:${isbn}`).join(",")
+    
+    const response = await makeHttpRequest(`https://openlibrary.org/api/books?bibkeys=${isbnParams}&jscmd=data&format=json`,'GET')
 
     try {
         return JSON.parse(response);
