@@ -8,7 +8,7 @@ document.getElementById('generateCSV').addEventListener('click', async (e) => {
     
     try {
         // Build the CSV Data
-        const csvData = await(getCSVDataFromISBN(isbn))
+        const csvData = await getCSVDataFromISBN(isbn);
         // Download the file
         downloadFile(`${isbn}.csv`,csvData)
     }
