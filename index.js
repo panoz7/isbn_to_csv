@@ -3,18 +3,32 @@ import {makeHttpRequest, downloadFile} from './helper.js';
 // Attach an event listener to the generate CSV button
 document.getElementById('generateCSV').addEventListener('click', async (e) => {
     
-    // Get the ISBN from the text field
-    const isbn = document.getElementById('isbn').value;
+    // Grab the ISBN string and remove any hyphens
+    let isbnString = document.getElementById('isbn').value;
+    isbnString = isbnString.replace("-","");
+
+    // Extract the individual ISBNs
+    let isbns = [];
+    let number = /\b\d+\b/g;
+    let match;
+    while (match = number.exec(isbnString)) {
+        isbns.push(match[0]);
+    }
+
+    console.log(isbns);
+    // let isbns = /\d+/g.exec(isbnString)
+
+    // console.log(isbns);
     
-    try {
-        // Build the CSV Data
-        const csvData = await getCSVDataFromISBN(isbn);
-        // Download the file
-        downloadFile(`${isbn}.csv`,csvData)
-    }
-    catch(e) {
-        alert("Unable to fetch data. Please double check the ISBN")
-    }
+    // try {
+    //     // Build the CSV Data
+    //     const csvData = await getCSVDataFromISBN(isbn);
+    //     // Download the file
+    //     downloadFile(`${isbn}.csv`,csvData)
+    // }
+    // catch(e) {
+    //     alert("Unable to fetch data. Please double check the ISBN")
+    // }
 
 
 })
