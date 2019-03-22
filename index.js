@@ -50,6 +50,7 @@ async function getCSVDataFromISBNs(isbns) {
         
     // Get the book info in JSON format from the Open Library API
     const openLibraryData = await getOpenLibraryData(isbns);
+    console.log(openLibraryData);
 
     // Build out the data rows by iterating through the ISBNs
     const csvData = isbns.map(isbn => {
